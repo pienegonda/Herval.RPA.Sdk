@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Framework -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+
+    <!-- Assembly -->
+    <AssemblyName>Pienelherme.RPA.Sdk</AssemblyName>
+
+    <!-- NuGet -->
+    <PackageId>Pienelherme.RPA.Sdk</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Guilherme Pienegonda</Authors>
+    <Company>Pienelherme</Company>
+    <Description>SDK para automações RPA em .NET utilizando Selenium e utilitários de arquivos.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/pienelherme/Herval.RPA.Sdk</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="8.3.1" />
+    <PackageReference Include="Selenium.Support" Version="4.38.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.38.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="142.0.7444.17500" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="141.0.3537.71" />
+    <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
+  </ItemGroup>
+
+</Project>

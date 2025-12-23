@@ -23,6 +23,7 @@ namespace Herval.RPA.Sdk.Services
                 _ => throw new ArgumentException("Navegador não suportado.")
             };
 
+            _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(url);
         }
 

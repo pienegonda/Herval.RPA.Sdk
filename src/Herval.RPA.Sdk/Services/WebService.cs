@@ -40,8 +40,8 @@ namespace Herval.RPA.Sdk.Services
         }
 
         private IWebElement AguardarElementoInteragivel(
-            ESeletor tipo, 
-            string seletor, 
+            ESeletor tipo,
+            string seletor,
             int timeout = 10)
         {
             InicializarDriverSeNecessário();
@@ -67,8 +67,8 @@ namespace Herval.RPA.Sdk.Services
         }
 
         public void ClicarQuandoAparecer(
-            ESeletor tipo, 
-            string seletor, 
+            ESeletor tipo,
+            string seletor,
             int timeout = 10)
         {
             var elemento = AguardarElementoInteragivel(tipo, seletor, timeout);
@@ -92,8 +92,8 @@ namespace Herval.RPA.Sdk.Services
         }
 
         public bool AguardarElemento(
-            ESeletor tipo, 
-            string seletor, 
+            ESeletor tipo,
+            string seletor,
             int timeout = 10)
         {
             InicializarDriverSeNecessário();
@@ -122,7 +122,7 @@ namespace Herval.RPA.Sdk.Services
 
             try
             {
-                return aguardar.Until(drv => System.IO.File.Exists(caminhoArquivo));
+                return aguardar.Until(drv => File.Exists(caminhoArquivo));
             }
             catch
             {
@@ -131,8 +131,8 @@ namespace Herval.RPA.Sdk.Services
         }
 
         public string ObterTextoElemento(
-            ESeletor tipo, 
-            string seletor, 
+            ESeletor tipo,
+            string seletor,
             int timeout = 10)
         {
             var elemento = AguardarElementoInteragivel(tipo, seletor, timeout);
@@ -140,8 +140,8 @@ namespace Herval.RPA.Sdk.Services
         }
 
         public bool VerificarElementoExiste(
-            ESeletor tipo, 
-            string seletor, 
+            ESeletor tipo,
+            string seletor,
             int timeout = 10)
         {
             InicializarDriverSeNecessário();
@@ -163,14 +163,77 @@ namespace Herval.RPA.Sdk.Services
         }
 
         public void SelecionarComboBoxPorTexto(
-            ESeletor tipo, 
-            string seletor, 
-            string texto, 
+            ESeletor tipo,
+            string seletor,
+            string texto,
             int timeout = 10)
         {
             var elemento = AguardarElementoInteragivel(tipo, seletor, timeout);
             var selectElement = new SelectElement(elemento);
             selectElement.SelectByText(texto);
+        }
+
+        public string ExecutarJavaScript(string script)
+        {
+            InicializarDriverSeNecessário();
+
+            var jsExecutor = (IJavaScriptExecutor)_driver;
+            var resultado = jsExecutor.ExecuteScript(script);
+
+            return resultado?.ToString() ?? string.Empty;
+        }
+
+        public string ObterHtmlElemento(ESeletor tipo, string seletor, int timeout = 10)
+        {
+            InicializarDriverSeNecessário();
+
+            var elemento = AguardarElementoInteragivel(tipo, seletor, timeout);
+            return elemento.GetAttribute("outerHTML");
+        }
+
+        public string ObterUrlAtual()
+        {
+            InicializarDriverSeNecessário();
+
+            return _driver.Url;
+        }
+
+        public void InjetarTokenNaPagina(ETipoCaptcha tipoCaptcha, string token)
+        {
+            switch (tipoCaptcha)
+            {
+                case ETipoCaptcha.Recaptcha:
+                    ExecutarJavaScript($"document.getElementById('g-recaptcha-response').innerHTML='{token}';");
+                    break;
+
+                case ETipoCaptcha.RecaptchaInvisible:
+                    var existeElemento = AguardarElemento(ESeletor.Id, "g-recaptcha-response", 1);
+                    if (existeElemento)
+                    {
+                        ExecutarJavaScript($"document.getElementById('g-recaptcha-response').innerHTML='{token}';");
+                    }
+                    else
+                    {
+                        ExecutarJavaScript($"document.getElementsByClassName('g-recaptcha-response')[0].innerHTML='{token}';");
+                    }
+                    break;
+
+                case ETipoCaptcha.HCaptcha:
+                    ExecutarJavaScript($"document.getElementsByName('g-recaptcha-response')[0].innerHTML='{token}';");
+                    ExecutarJavaScript($"document.getElementsByName('h-captcha-response')[0].innerHTML='{token}';");
+                    break;
+
+                case ETipoCaptcha.CloudflareTurnstile:
+                    ExecutarJavaScript($"document.getElementsByName('cf-turnstile-response')[0].value='{token}';");
+                    break;
+
+                case ETipoCaptcha.RecaptchaV3:
+                case ETipoCaptcha.RecaptchaEnterprise:
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Injeção de token não suportada para '{tipoCaptcha}'");
+            }
         }
     }
 }

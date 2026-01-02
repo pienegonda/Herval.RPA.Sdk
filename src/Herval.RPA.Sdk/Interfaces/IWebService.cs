@@ -14,5 +14,9 @@ namespace Herval.RPA.Sdk.Interfaces
         string ObterTextoElemento(ESeletor tipo, string seletor, int timeout = 10);
         bool VerificarElementoExiste(ESeletor tipo, string seletor, int timeout = 10);
         void SelecionarComboBoxPorTexto(ESeletor tipo, string seletor, string texto, int timeout = 10);
+        string ExecutarJavaScript(string script);
+        string ObterHtmlElemento(ESeletor tipo, string seletor, int timeout = 10);
+        string ObterUrlAtual();
+        void InjetarTokenNaPagina(ETipoCaptcha tipoCaptcha, string token);
     }
 }

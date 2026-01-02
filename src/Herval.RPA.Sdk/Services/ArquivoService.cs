@@ -1,6 +1,5 @@
 using System.Text;
 using Herval.RPA.Sdk.Interfaces;
-using OfficeOpenXml;
 using UglyToad.PdfPig;
 
 namespace Herval.RPA.Sdk.Services

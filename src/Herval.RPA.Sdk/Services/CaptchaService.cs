@@ -1,13 +1,13 @@
 using Herval.RPA.Sdk.Enums;
 using Herval.RPA.Sdk.Interfaces;
-using Herval.RPA.Sdk.Mappers;
-using Herval.RPA.Sdk.Models;
+using Herval.RPA.Sdk.Mappers.Requests;
+using Herval.RPA.Sdk.Mappers.Responses;
+using Herval.RPA.Sdk.Models.Requests;
+using Herval.RPA.Sdk.Models.Responses;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Herval.RPA.Sdk.Services;
@@ -50,7 +50,7 @@ public class CaptchaService : ICaptchaService
             _webService.InjetarTokenNaPagina(tipoCaptcha, token);
             return true;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             throw new Exception($"Erro ao resolver captcha: {ex.Message}", ex);
         }
@@ -60,11 +60,7 @@ public class CaptchaService : ICaptchaService
     {
         try
         {
-            var payload = new
-            {
-                siteKey = siteKey,
-                url = url
-            };
+            var payload = CaptchaRequestMapper.Map(url, siteKey);
 
             var response = await _httpClient.PostAsJsonAsync($"{_configuration["Captcha:ApiBaseUrl"]}/recaptcha", payload);
             var captchaResponse = await TratamentoRetornoAsync<CaptchaResponse>(response);
@@ -88,11 +84,7 @@ public class CaptchaService : ICaptchaService
             var elementoHTML = _webService.ObterHtmlElemento(ESeletor.XPath, xpathCaptcha);
             var siteKey = ExtrairSiteKey(elementoHTML);
 
-            var payload = new
-            {
-                siteKey = siteKey,
-                url = url
-            };
+            var payload = CaptchaRequestMapper.Map(url, siteKey);
 
             var response = await _httpClient.PostAsJsonAsync($"{_configuration["Captcha:ApiBaseUrl"]}/recaptcha", payload);
             var captchaResponse = await TratamentoRetornoAsync<CaptchaResponse>(response);
@@ -116,13 +108,7 @@ public class CaptchaService : ICaptchaService
             var elementoHTML = _webService.ObterHtmlElemento(ESeletor.XPath, xpathCaptcha);
             var siteKey = ExtrairSiteKey(elementoHTML);
 
-            var payload = new
-            {
-                siteKey = siteKey,
-                url = url,
-                action = action,
-                enterprise = 0
-            };
+            var payload = RecaptchaRequestMapper.Map(url, siteKey, action, 0);
 
             var response = await _httpClient.PostAsJsonAsync($"{_configuration["Captcha:ApiBaseUrl"]}/recaptchaV3", payload);
             var captchaResponse = await TratamentoRetornoAsync<CaptchaResponse>(response);
@@ -146,13 +132,7 @@ public class CaptchaService : ICaptchaService
             var elementoHTML = _webService.ObterHtmlElemento(ESeletor.XPath, xpathCaptcha);
             var siteKey = ExtrairSiteKey(elementoHTML);
 
-            var payload = new
-            {
-                siteKey = siteKey,
-                url = url,
-                action = action,
-                enterprise = 1
-            };
+            var payload = RecaptchaRequestMapper.Map(url, siteKey, action, 1);
 
             var response = await _httpClient.PostAsJsonAsync($"{_configuration["Captcha:ApiBaseUrl"]}/recaptcha-enterprise", payload);
             var captchaResponse = await TratamentoRetornoAsync<CaptchaResponse>(response);
@@ -173,11 +153,7 @@ public class CaptchaService : ICaptchaService
     {
         try
         {
-            var payload = new
-            {
-                siteKey = siteKey,
-                url = url
-            };
+            var payload = CaptchaRequestMapper.Map(url, siteKey);
 
             var response = await _httpClient.PostAsJsonAsync($"{_configuration["Captcha:ApiBaseUrl"]}/hcaptcha", payload);
             var captchaResponse = await TratamentoRetornoAsync<CaptchaResponse>(response);
@@ -222,11 +198,7 @@ public class CaptchaService : ICaptchaService
     {
         try
         {
-            var payload = new
-            {
-                siteKey = siteKey,
-                url = url
-            };
+            var payload = CaptchaRequestMapper.Map(url, siteKey);
 
             var response = await _httpClient.PostAsJsonAsync($"{_configuration["Captcha:ApiBaseUrl"]}/cloudflare-turnstile", payload);
             var captchaResponse = await TratamentoRetornoAsync<CaptchaResponse>(response);
@@ -249,27 +221,15 @@ public class CaptchaService : ICaptchaService
         {
             var base64Image = Convert.ToBase64String(File.ReadAllBytes(imagePath));
 
-            var createTaskPayload = new
-            {
-                clientKey = _configuration["Captcha:ApiKey2Captcha"],
-                task = new
-                {
-                    type = "ImageToTextTask",
-                    body = base64Image,
-                    math = true,
-                    numeric = 1
-                }
-            };
+            var payload = CaptchaImagemCalculoRequestMapper.Map(_configuration["Captcha:ApiKey2Captcha"],"ImageToTextTask",base64Image,true,1);
 
-            var createTaskResponse = await _httpClient.PostAsJsonAsync("https://api.2captcha.com/createTask", createTaskPayload);
-            var createTaskResult = await TratamentoRetornoAsync<JObject>(createTaskResponse);
-            var taskId = createTaskResult?["taskId"]?.ToString();
+            var createTaskResponse = await _httpClient.PostAsJsonAsync("https://api.2captcha.com/createTask", payload);
+            var createTaskResult = await TratamentoRetornoAsync<CaptchaImagemCalculoResponse>(createTaskResponse);
+            var taskId = CaptchaImagemCalculoResponseMapper.Map(createTaskResult);
 
-            if (string.IsNullOrEmpty(taskId))
-            {
+            if (taskId is null)
                 throw new Exception("Falha ao criar task de captcha de cálculo");
-            }
-
+            
             await Task.Delay(10000);
 
             var getResultPayload = new

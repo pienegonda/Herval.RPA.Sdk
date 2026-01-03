@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 
 namespace Herval.RPA.Sdk.Services
 {
@@ -47,15 +48,9 @@ namespace Herval.RPA.Sdk.Services
             InicializarDriverSeNecessário();
 
             var by = SeletorHelper.ConverterParaBy(tipo, seletor);
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeout));
 
-            var aguardar = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeout));
-            aguardar.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
-
-            return aguardar.Until(drv =>
-            {
-                var elem = drv.FindElement(by);
-                return (elem.Displayed && elem.Enabled) ? elem : null;
-            });
+            return wait.Until(ExpectedConditions.ElementToBeClickable(by));
         }
 
         public void PreencherCampoQuandoAparecer(
